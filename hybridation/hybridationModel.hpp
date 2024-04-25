@@ -25,14 +25,19 @@ struct hybridation
 
   struct ins
   {
-    halp::hslider_f32<"Pointeur"> x_input;
-    halp::hslider_f32<"Pointeur2"> y_input;
-    halp::xyz_spinboxes_f32<"Objet 1"> blob1;
+    halp::xy_pad_f32<"Naviguateur"> navigateur;
+    halp::xy_pad_f32<"Blob 1"> blob1;
+    halp::xy_pad_f32<"Blob 2"> blob2;
+    halp::xy_pad_f32<"Blob 3"> blob3;
+    halp::xy_pad_f32<"Blob 4"> blob4;
   } inputs;
 
   struct
   {
-    halp::val_port<"out", float> out;
+    halp::val_port<"out", float> out1;
+    halp::val_port<"out", float> out2;
+    halp::val_port<"out", float> out3;
+    halp::val_port<"out", float> out4;
 
   } outputs;
 
@@ -53,16 +58,26 @@ struct hybridation
     float rect_x;
     float rect_y;
 
+    std::vector<float> blob1 = {0.2, 0.8};
+    std::vector<float> blob2 = {0.8, 0.8};
+    std::vector<float> blob3 = {0.8, 0.2};
+    std::vector<float> blob4 = {0.2, 0.2};
+
+
 
     void paint(avnd::painter auto ctx)
     {
 
       ctx.set_stroke_color({.r = 92, .g = 53, .b = 102, .a = 255});
       ctx.set_fill_color({173, 127, 168, 255});
-      ctx.draw_rect(rect_x*width(), rect_y*height(), 15., 15.);
-      ctx.draw_rect(175., 175., 15., 15.);
-      ctx.draw_rect(15., 175., 15., 15.);
-      ctx.draw_rect(175., 15., 15., 15.);
+      ctx.draw_circle(blob1[0]*width(), blob1[1]*height(), 15.);
+      ctx.draw_circle(blob2[0]*width(), blob2[1]*height(), 15.);
+      ctx.draw_circle(blob3[0]*width(), blob3[1]*height(), 15.);
+      ctx.draw_circle(blob4[0]*width(), blob4[1]*height(), 15.);
+
+      ctx.set_stroke_color({.r = 42, .g = 153, .b = 153, .a = 255});
+
+      ctx.draw_rect(rect_x*width(), rect_y*height(), 10., 10.);
 
       ctx.fill();
       ctx.stroke();
@@ -74,11 +89,17 @@ struct hybridation
 
   void operator()()
   {
-    auto ix = inputs.x_input.value;
-    auto iy = inputs.y_input.value;
+    auto [ix,iy] = inputs.navigateur.value;
+    auto [ax, ay] = inputs.blob1.value;
+    auto [bx, by] = inputs.blob2.value;
+    auto [cx, cy] = inputs.blob3.value;
+    auto [dx, dy] = inputs.blob4.value;
 
-    auto [ax, ay, az] = inputs.blob1.value;
-    outputs.out.value = fmax(1.0 - sqrt(pow(ix-ax,2.0) + pow(iy-ay,2.0))/az,0.);
+    outputs.out1.value = fmax(1.0 - sqrt(pow(ix-ax,2.0) + pow(iy-ay,2.0)),0.);
+    outputs.out2.value = fmax(1.0 - sqrt(pow(ix-bx,2.0) + pow(iy-by,2.0)),0.);
+    outputs.out3.value = fmax(1.0 - sqrt(pow(ix-cx,2.0) + pow(iy-cy,2.0)),0.);
+    outputs.out4.value = fmax(1.0 - sqrt(pow(ix-dx,2.0) + pow(iy-dy,2.0)),0.);
+
     send_message(processor_to_ui{.x_input = ix, .y_input = iy});
 
   }
@@ -106,8 +127,7 @@ struct hybridation
     {
       halp_meta(layout, halp::layouts::hbox)
       halp_meta(name, "HBox")
-      halp::item<&ins::x_input> x_input;
-      halp::item<&ins::y_input> y_input;
+      halp::item<&ins::navigateur> navigateur;
     } a_hbox;
 
     struct
