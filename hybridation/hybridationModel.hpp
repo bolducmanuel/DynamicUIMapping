@@ -45,6 +45,12 @@ struct hybridation
   {
     float x_input;
     float y_input;
+
+    std::vector<float> blob1;
+    std::vector<float> blob2;
+    std::vector<float> blob3;
+    std::vector<float> blob4;
+
   };
 
   std::function<void(processor_to_ui)> send_message;
@@ -90,6 +96,7 @@ struct hybridation
   void operator()()
   {
     auto [ix,iy] = inputs.navigateur.value;
+
     auto [ax, ay] = inputs.blob1.value;
     auto [bx, by] = inputs.blob2.value;
     auto [cx, cy] = inputs.blob3.value;
@@ -100,7 +107,8 @@ struct hybridation
     outputs.out3.value = fmax(1.0 - sqrt(pow(ix-cx,2.0) + pow(iy-cy,2.0)),0.);
     outputs.out4.value = fmax(1.0 - sqrt(pow(ix-dx,2.0) + pow(iy-dy,2.0)),0.);
 
-    send_message(processor_to_ui{.x_input = ix, .y_input = iy});
+    send_message(processor_to_ui{.x_input = ix, .y_input = iy,
+                                 .blob1 = {ax, ay}, .blob2 = {bx, by}, .blob3 = {cx, cy}, .blob4 = {dx,dy}});
 
   }
 
@@ -118,6 +126,10 @@ struct hybridation
         qDebug() << msg.x_input << msg.y_input;
         self.a_vbox.anim.rect_x = msg.x_input;
         self.a_vbox.anim.rect_y = msg.y_input;
+        self.a_vbox.anim.blob1 = msg.blob1;
+        self.a_vbox.anim.blob2 = msg.blob2;
+        self.a_vbox.anim.blob3 = msg.blob3;
+        self.a_vbox.anim.blob4 = msg.blob4;
 
       }
 
@@ -132,9 +144,13 @@ struct hybridation
 
     struct
     {
-      halp_meta(layout, halp::layouts::vbox)
-      halp_meta(name, "VBox")
+      halp_meta(layout, halp::layouts::grid)
+      halp_meta(columns, 2)
+      halp_meta(name, "Blobs")
       halp::item<&ins::blob1> blob1;
+      halp::item<&ins::blob2> blob2;
+      halp::item<&ins::blob3> blob3;
+      halp::item<&ins::blob4> blob4;
     } b_vbox;
 
     struct
